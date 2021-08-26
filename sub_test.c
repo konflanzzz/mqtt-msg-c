@@ -29,7 +29,7 @@ int main() {
 	mosquitto_connect_callback_set(mosq, on_connect);
 	mosquitto_message_callback_set(mosq, on_message);
 	
-	rc = mosquitto_connect(mosq, "localhost", 1883, 10);
+	rc = mosquitto_connect(mosq, "broker.emqx.io", 1883, 10);
 	
 	if (rc){
 		printf("Nao foi possivel se conectar com o broker. Erro: %d\n", rc);
