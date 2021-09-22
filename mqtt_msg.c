@@ -1,76 +1,88 @@
 #include <stdio.h>
-#include <stdlb.h>
-
+#include <stdlib.h>
 #include <mosquitto.h>
 
+int enviarMensagem(){
 
-int main(){
-
-}
-
-int enviarMensagem(char user_message){
-
-	int resposta;
+	int rc;
 	struct mosquitto * mosq;
+	char user_name[100];
+	char user_message[500];
 
-	mosquito_lib_init();
+	mosquitto_lib_init();
 
-	mosq_pub = mosquitto_new("msg-publisher", true, 10);
+	mosq = mosquitto_new("publisher-test", true, NULL);
 
-	resposta = mosquitto_connect(mosq_pub, "broker.emqx.io", 1883, 60);
+	rc = mosquitto_connect(mosq, "broker.emqx.io", 1883, 60);
 
-	if (resposta !=0) {
-		printf("Nao foi possivel se conectar ao broker. Erro: CODE: %d\n", resposta);
-		mosquitto_destroy(mosq_pub);
+	if (rc != 0)
+	{
+		printf("Client nao pode se conectar ao broker. Erro codigo: %d\n", rc);
+		mosquitto_destroy(mosq);
 		return -1;
 	}
 
-	printf("Conexao estabelecida com sucesso! "\n);
-	
-	mosquitto_publish(mosq_pub, NULL, "msg-topic/t1", 250, user_message, 0, false);
-	mosquitto_disconnect(mosq_pub);
-	mosquitto_destroy(mosq_pub);
-	mosquito_lib_cleanup();
-	
+	printf("conexao estabelecida com sucesso! \n");
+
+	printf("Digite sua mensagem: ");
+	scanf("%[^\n]", user_message);
+
+	mosquitto_publish(mosq, NULL, "msg-fernando/t1", 500, user_message, 0, false);
+	mosquitto_disconnect(mosq);
+	mosquitto_destroy(mosq);
+	mosquitto_lib_cleanup();
 	return 0;
 }
 
-int receberMensagem(){
-	int resposta;
-
-	struct mosquitto * mosq_sub;
-
-	mosq_sub = mosquitto_new("msg-subscriber", true, 11);
-	mosquitto_connect_callback_set(mosq_sub, conexao);
-	mosquitto_message_callback_set(mosq_sub, on message);
-
-	resposta = mosquitto_connect(mosq_sub, "broker.emqx.io", 1883, 60);
-
-	if (resposta != 0 ){
-		printf("Nao foi possivel se conectar ao broker. Erro: CODE: %d\n", resposta);
-		return -1;
-	}
+void on_connect(struct mosquitto *mosq, void *obj, int rc) {
 	
-	mosquitto_loop_start(mosq_sub);
-	printf("Pressione Enter para sair...\n");
-	getchar();
-	mosquitto_loop_stop(mosq_sub, true);
+	printf("ID: %d\n", * (int *) obj);
 
-}
-
-void conexao(struct mosquitto * mosq_sub, void * obj, int resposta){
-	
-	printf("ID: %d\n", * ( int *) obj);
-	
-	if (resposta){
-		printf("Erro: CODE: %d\n", resposta);
+	if(rc){
+		printf("Erro codigo: %d\n", rc);
 		exit(-1);
 	}
-	
-	mosquitto_subscribe(mosq_sub, null, "msg-topic/t1", 0);
+
+	mosquitto_subscribe(mosq, NULL, "msg-fernando/t1", 0);
 
 }
 
-void mensagem(struct mosquitto * mosq_sub, void * obj, const struct mosquitto_message * msg){
-	printf("Nova mensagem: %s: %s\n", msg->topic,( char * ) msg->payload);
+void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg){
+	printf("Nova mensagem de %s: %s\n", msg->topic, (char *) msg->payload);
+}
+
+int receberMensagem() {
+	int rc, id=12;
+
+	struct mosquitto *mosq;
+
+	mosq = mosquitto_new("subscriber-test", true, &id);
+	mosquitto_connect_callback_set(mosq, on_connect);
+	mosquitto_message_callback_set(mosq, on_message);
+	
+	rc = mosquitto_connect(mosq, "broker.emqx.io", 1883, 10);
+	
+	if (rc){
+		printf("Nao foi possivel se conectar com o broker. Erro: %d\n", rc);
+		return -1;
+	}
+
+	mosquitto_loop_start(mosq);
+	printf("Pressione Enter para sair...\n");
+	getchar();
+	mosquitto_loop_stop(mosq, true);
+
+	mosquitto_disconnect(mosq);
+	mosquitto_destroy(mosq);
+	mosquitto_lib_cleanup();
+
+	return 0;
+
+}
+
+int main()
+{
+	int a;
+	a = receberMensagem();
+	return 0;
 }
