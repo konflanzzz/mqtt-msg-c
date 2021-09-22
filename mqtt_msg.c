@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mosquitto.h>
+#include <unistd.h>
+#include <pthread.h>
 
-int enviarMensagem(){
+void * enviarMensagem(){
 
 	int rc;
 	struct mosquitto * mosq;
@@ -19,7 +21,7 @@ int enviarMensagem(){
 	{
 		printf("Client nao pode se conectar ao broker. Erro codigo: %d\n", rc);
 		mosquitto_destroy(mosq);
-		return -1;
+		exit(-1);
 	}
 
 	printf("conexao estabelecida com sucesso! \n");
@@ -31,7 +33,9 @@ int enviarMensagem(){
 	mosquitto_disconnect(mosq);
 	mosquitto_destroy(mosq);
 	mosquitto_lib_cleanup();
-	return 0;
+
+	return NULL;
+
 }
 
 void on_connect(struct mosquitto *mosq, void *obj, int rc) {
@@ -51,7 +55,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 	printf("Nova mensagem de %s: %s\n", msg->topic, (char *) msg->payload);
 }
 
-int receberMensagem() {
+void * receberMensagem() {
 	int rc, id=12;
 
 	struct mosquitto *mosq;
@@ -64,7 +68,7 @@ int receberMensagem() {
 	
 	if (rc){
 		printf("Nao foi possivel se conectar com o broker. Erro: %d\n", rc);
-		return -1;
+		exit(-1);
 	}
 
 	mosquitto_loop_start(mosq);
@@ -76,13 +80,18 @@ int receberMensagem() {
 	mosquitto_destroy(mosq);
 	mosquitto_lib_cleanup();
 
-	return 0;
+	return NULL;
 
 }
 
 int main()
 {
-	int a;
-	a = receberMensagem();
+	pthread_t msg_receber_mensagem;
+	pthread_create(&msg_receber_mensagem, NULL, receberMensagem, NULL);
+
+	pthread_t msg_enviar_mensagem;
+	pthread_create(&msg_enviar_mensagem, NULL, enviarMensagem, NULL);
+
+	pthread_exit(NULL);
 	return 0;
 }
