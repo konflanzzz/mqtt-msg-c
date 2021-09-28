@@ -29,7 +29,7 @@ void * enviarMensagem(){
 	printf("Digite sua mensagem: ");
 	scanf("%[^\n]", user_message);
 
-	mosquitto_publish(mosq, NULL, "msg-fernando/t1", 500, user_message, 0, false);
+	mosquitto_publish(mosq, NULL, "msg-fernando/t1", 500, user_message, 0, false); //msg-patrick/t1
 	mosquitto_disconnect(mosq);
 	mosquitto_destroy(mosq);
 	mosquitto_lib_cleanup();
@@ -47,7 +47,7 @@ void on_connect(struct mosquitto *mosq, void *obj, int rc) {
 		exit(-1);
 	}
 
-	mosquitto_subscribe(mosq, NULL, "msg-fernando/t1", 0);
+	mosquitto_subscribe(mosq, NULL, "msg-fernando/t1", 0); //msg-patrick/t1
 
 }
 
@@ -71,6 +71,8 @@ void * receberMensagem() {
 		exit(-1);
 	}
 
+	//escutar msg-fernando/t1
+
 	mosquitto_loop_start(mosq);
 	printf("Pressione Enter para sair...\n");
 	getchar();
@@ -86,12 +88,12 @@ void * receberMensagem() {
 
 int main()
 {
-	pthread_t msg_receber_mensagem;
-	pthread_create(&msg_receber_mensagem, NULL, receberMensagem, NULL);
+	// pthread_t msg_receber_mensagem;
+	// pthread_create(&msg_receber_mensagem, NULL, receberMensagem, NULL);
 
-	pthread_t msg_enviar_mensagem;
-	pthread_create(&msg_enviar_mensagem, NULL, enviarMensagem, NULL);
+	// pthread_t msg_enviar_mensagem;
+	// pthread_create(&msg_enviar_mensagem, NULL, enviarMensagem, NULL);
 
-	pthread_exit(NULL);
+	// pthread_exit(NULL);
 	return 0;
 }
