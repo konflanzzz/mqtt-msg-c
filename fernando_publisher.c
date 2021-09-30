@@ -26,20 +26,10 @@ int main()
 
     printf("conexao estabelecida com sucesso! \n");
 
-    printf("Destino: ");
-    scanf("%[^\n]", destino);
-
     printf("Digite sua mensagem: ");
     scanf("%[^\n]", user_message);
 
-    if (destino == "patrick"){
-        mosquitto_publish(mosq, NULL, "msg-patrick/t1", 500, user_message, 0, false); //msg-patrick/t1
-    }
-
-    if (destino == "grupo")
-    {
-        mosquitto_publish(mosq, NULL, "msg-grupo/t1", 500, user_message, 0, false); 
-    }
+    mosquitto_publish(mosq, NULL, "msg-patrick/t1", 500, user_message, 0, false); //msg-patrick/t1
 
     mosquitto_disconnect(mosq);
     mosquitto_destroy(mosq);
