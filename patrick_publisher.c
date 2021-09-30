@@ -29,7 +29,7 @@ int main()
     printf("Digite sua mensagem: ");
     scanf("%[^\n]", user_message);
     
-    mosquitto_publish(mosq, NULL, "msg-grupo/t1", 500, user_message, 0, false);
+    mosquitto_publish(mosq, NULL, "msg-fernando/t1", 500, user_message, 0, false);
 
     mosquitto_disconnect(mosq);
     mosquitto_destroy(mosq);
